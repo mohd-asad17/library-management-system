@@ -2,13 +2,16 @@ import { createBook, deleteBook, getAllBooks, getBookById, updateBook } from "..
 
 const createBookController = async (req, res) => {
   try {
+
     const { title, author, isbn, category, publisher, description } = req.body;
 
-    if (!title || !author) {
+    const isInValid = !title || !author;
+    if (isInValid) {
       return res.status(400).json({
         success: false,
         message: "Title and Author are required",
       });
+    }
 
       const book = await createBook({
         title: title.trim(),
@@ -24,7 +27,6 @@ const createBookController = async (req, res) => {
         message: "Book successfully added",
         data: book
       });
-    }
   } catch (error) {
     console.log("error", error);
 
@@ -44,7 +46,7 @@ const createBookController = async (req, res) => {
 };
 
 
-const getBooksController = async (req, res) => {
+const getAllBooksController = async (req, res) => {
     try {
         const books = await getAllBooks();
 
@@ -180,7 +182,7 @@ const removeBookController = async (req, res) => {
 
 export {
     createBookController,
-    getBooksController,
+    getAllBooksController,
     getBookController,
     updateBookController,
     removeBookController
