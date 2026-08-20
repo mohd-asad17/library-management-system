@@ -1,4 +1,4 @@
-import { cancelBookRequest, createBookRequests, getMyBookRequests, getMyBookRequestsById } from "../services/bookRequest.service.js";
+import { approveRequest, cancelBookRequest, createBookRequests, getAllBookRequests, getMyBookRequests, getMyBookRequestsById, rejectRequest } from "../services/bookRequest.service.js";
 
 
 const createBookRequestController = async (req, res) => {
@@ -160,9 +160,115 @@ const cancelBookRequestController = async (req, res) => {
     }
 };
 
+const getAllBookRequestController = async (req, res) => {
+    try {
+        const fetchRequests = await getAllBookRequests();
+
+        return res.status(200).json({
+            success: true, 
+            message: "Fetch the book request successfully"
+        });
+    } catch (error) {
+        console.log("Book Request error: ", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch the book requests"
+        });
+    }
+}
+
+const approveRequestController = async (req, res) => {
+    try {
+        const requestId = Number(req.params.id);
+        const processedBy = Number(req.user.userId);
+
+        if(!Number.isInteger(requestId) || requestId <= 0){
+            return res.status(404).json({
+                success: false,
+                message: "Invalid request Id"
+            });
+        }
+
+        const request = await approveRequest(requestId, processedBy);
+
+        return res.status(200).json({
+            success: true,
+            message: "Book request approved successfully",
+            data: request
+        });
+    } catch (error) {
+        console.error("Approve book request error:", error);
+
+        if (error.message === "REQUEST_NOT_FOUND") {
+            return res.status(404).json({
+                success: false,
+                message: "Book request not found",
+            });
+        }
+
+        if (error.message === "REQUEST_NOT_PENDING") {
+            return res.status(409).json({
+                success: false,
+                message: "Only pending requests can be approved",
+            });
+        }
+
+        if (error.message === "NO_AVAILABLE_COPY") {
+            return res.status(409).json({
+                success: false,
+                message: "No available copy is currently available for this request",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to approve book request",
+        });
+    }
+}
+
+const rejectRequestController = async (req, res) => {
+    try {
+        const requestId = Number(req.params.userId);
+        const processedBy = Number(req.user.userId);
+
+        if(!Number.isInteger(requestId) || requestId <= 0){
+            return res.status(404).json({
+                success: false,
+                message: "Invalid request Id"
+            });
+        }
+
+        const request = await rejectRequest(requestId, processedBy);
+
+        if(!request) {
+            return res.status(400).json({
+                success: false,
+                message: "Pending book request not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Book request rejected successfully",
+            data: request
+        });
+    } catch (error) {
+        console.error("Reject book request error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to reject book request",
+        });
+    }
+}
 export {
     createBookRequestController,
     getMyBookRequestController,
     getBookRequestByIdController,
-    cancelBookRequestController
+    cancelBookRequestController,
+    getAllBookRequestController, 
+    approveRequestController,
+    rejectRequestController
 }
