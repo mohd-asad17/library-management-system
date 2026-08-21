@@ -11,7 +11,6 @@ import bookRequestRouter from "./routes/bookRequest.routes.js"
 
 const app = express();
 
-
 app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
@@ -21,11 +20,6 @@ app.use("/api/books", bookRouter);
 app.use("/api", bookCopyRouter);
 app.use("/api/book-requests", bookRequestRouter);
 
-app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Library management system API is running successfully",
-    });
 });
 
 
